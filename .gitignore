@@ -1,0 +1,7 @@
+.abc
+.idea
+.sonar
+composer.phar
+composer.lock
+vendor
+*.iml
