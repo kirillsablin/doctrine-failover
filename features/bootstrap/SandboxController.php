@@ -1,5 +1,5 @@
 <?php
-namespace Doctrine\Tests\DBAL\Functional\Failover;
+namespace FailoverContext;
 
 class SandboxController
 {

@@ -1,0 +1,13 @@
+default:
+  context:
+    parameters:
+      sandbox_dir: '/home/kirk/sandboxes/rcsandbox_5_1_61'
+      db:
+            driver: 'pdo_mysql'
+            host: '127.0.0.1'
+            port: '20101'
+            reserve_host: '127.0.0.1'
+            reserve_port: '20102'
+            user: "msandbox"
+            password: "msandbox"
+            dbname: "test"
