@@ -15,3 +15,11 @@ Feature: failover
     When I connect to db
     Then failover status should be set to use reserve and dont retry until some time in future
     And reserve db should be used
+
+  Scenario: don't retry until
+    Given main db is online
+    And failover status is dont retry until future
+    When I connect to db
+    Then reserve db should be used
+
+

@@ -6,6 +6,7 @@ use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 use FailoverContext\SandboxController;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\Common\Cache\ArrayCache;
 
 require_once __DIR__."/bootstrap.php";
 
@@ -17,13 +18,21 @@ class FeatureContext extends BehatContext
      * @var DoctrineExtensions\DBAL\Connections\MasterMasterFailoverConnection
      */
     private $connection;
+    /**
+     * @var Doctrine\Common\Cache\ArrayCache
+     */
+    private $cache;
 
     public function __construct(array $parameters)
     {
-        $this->sandboxController        = new SandboxController($parameters['sandbox_dir']);
-        $this->dbParams                 = $parameters['db'];
-        $this->dbParams['wrapperClass'] = '\DoctrineExtensions\DBAL\Connections\MasterMasterFailoverConnection';
-        $this->connection               = DriverManager::getConnection($this->dbParams);
+        $this->sandboxController = new SandboxController($parameters['sandbox_dir']);
+        $this->cache             = new ArrayCache();
+
+        $this->dbParams                            = $parameters['db'];
+        $this->dbParams['wrapperClass']            = '\DoctrineExtensions\DBAL\Connections\MasterMasterFailoverConnection';
+        $this->dbParams['failoverStatusCacheImpl'] = $this->cache;
+
+        $this->connection = DriverManager::getConnection($this->dbParams);
     }
 
     /**
@@ -39,7 +48,12 @@ class FeatureContext extends BehatContext
      */
     public function failoverStatusIsClean()
     {
+        $this->cache->delete($this->failoverStatusVar());
+    }
 
+    private function failoverStatusVar()
+    {
+        return $this->dbParams['host'].':'.$this->dbParams['port'].':failoverStatus';
     }
 
     /**
@@ -55,7 +69,8 @@ class FeatureContext extends BehatContext
      */
     public function mainDbShouldBeUsed()
     {
-        \assertEquals('main', $this->connection->getCurrentServer());
+        \assertEquals($this->dbParams['port'], $this->connection->getPort());
+        \assertEquals($this->dbParams['host'], $this->connection->getHost());
     }
 
     /**
@@ -71,7 +86,7 @@ class FeatureContext extends BehatContext
      */
     public function failoverStatusShouldBeSetToUseReserveAndDontRetryUntilSomeTimeInFuture()
     {
-        throw new PendingException();
+        \assertTrue($this->cache->fetch($this->failoverStatusVar()) > time());
     }
 
     /**
@@ -79,7 +94,16 @@ class FeatureContext extends BehatContext
      */
     public function reserveDbShouldBeUsed()
     {
-        \assertEquals('reserve', $this->connection->getCurrentServer());
+        \assertEquals($this->dbParams['reserve_port'], $this->connection->getPort());
+        \assertEquals($this->dbParams['reserve_host'], $this->connection->getHost());
+    }
+
+    /**
+     * @Given /^failover status is dont retry until future$/
+     */
+    public function failoverStatusIsDontRetryUntilFuture()
+    {
+        $this->cache->save($this->failoverStatusVar(), time() + 600);
     }
 
 }
