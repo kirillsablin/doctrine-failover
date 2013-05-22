@@ -24,15 +24,22 @@ class MasterMasterFailoverConnection extends Connection
         if($this->isConnected) {
             return false;
         }
-
         $this->ensureValidParams();
 
-        try {
-            $this->connectByParams($this->getParams());
+        if($this->failoverStatus() !== false) {
+            if($this->failoverStatus() > time()) {
+                $this->connectByParams($this->reserveParams());
+            }
+
         }
-        catch(\Exception $e) {
-            $this->connectByParams($this->reserveParams());
-            $this->updateFailoverStatus();
+        else {
+            try {
+                $this->connectByParams($this->getParams());
+            }
+            catch(\Exception $e) {
+                $this->connectByParams($this->reserveParams());
+                $this->updateFailoverStatus();
+            }
         }
 
         $this->isConnected = true;
@@ -104,11 +111,19 @@ class MasterMasterFailoverConnection extends Connection
         $params['failoverStatusCacheImpl']->save($this->failoverStatusVar(), time() + self::DONT_RETRY_PERIOD);
     }
 
+    private function failoverStatus()
+    {
+        $params = $this->getParams();
+
+        return $params['failoverStatusCacheImpl']->fetch($this->failoverStatusVar());
+    }
+
     private function failoverStatusVar()
     {
         $params = $this->getParams();
 
         return $params['host'].':'.$params['port'].':failoverStatus';
     }
+
 
 }
