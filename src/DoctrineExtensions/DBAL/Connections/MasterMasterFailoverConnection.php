@@ -4,8 +4,10 @@ namespace DoctrineExtensions\DBAL\Connections;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events;
-use Doctrine\Common\Cache\Cache;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Configuration;
+use Doctrine\Common\EventManager;
 
 class MasterMasterFailoverConnection extends Connection
 {
@@ -13,6 +15,14 @@ class MasterMasterFailoverConnection extends Connection
 
     private $isConnected = false;
     private $usedParams = null;
+
+    private $failoverStatus;
+
+    public function __construct(array $params, Driver $driver, Configuration $config = null, EventManager $eventManager = null)
+    {
+        $this->failoverStatus = new FailoverStatus($params);
+        parent::__construct($params, $driver, $config, $eventManager);
+    }
 
     public function isConnected()
     {
@@ -24,21 +34,19 @@ class MasterMasterFailoverConnection extends Connection
         if($this->isConnected) {
             return false;
         }
-        $this->ensureValidParams();
 
-        if($this->failoverStatus() !== false) {
-            if($this->failoverStatus() > time()) {
-                $this->connectByParams($this->reserveParams());
-            }
-
-        }
-        else {
+        if($this->failoverStatus->isClean()) {
             try {
                 $this->connectByParams($this->getParams());
             }
             catch(\Exception $e) {
                 $this->connectByParams($this->reserveParams());
-                $this->updateFailoverStatus();
+                $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
+            }
+        }
+        else {
+            if($this->failoverStatus->isActive()) {
+                $this->connectByParams($this->reserveParams());
             }
         }
 
@@ -96,34 +104,5 @@ class MasterMasterFailoverConnection extends Connection
 
         return $params;
     }
-
-    private function ensureValidParams()
-    {
-        $params = $this->getParams();
-        if(!isset($params['failoverStatusCacheImpl']) || !$params['failoverStatusCacheImpl'] instanceof Cache) {
-            throw new DBALException('failoverStatusCacheImpl param should be set to valid cache implementation');
-        }
-    }
-
-    private function updateFailoverStatus()
-    {
-        $params = $this->getParams();
-        $params['failoverStatusCacheImpl']->save($this->failoverStatusVar(), time() + self::DONT_RETRY_PERIOD);
-    }
-
-    private function failoverStatus()
-    {
-        $params = $this->getParams();
-
-        return $params['failoverStatusCacheImpl']->fetch($this->failoverStatusVar());
-    }
-
-    private function failoverStatusVar()
-    {
-        $params = $this->getParams();
-
-        return $params['host'].':'.$params['port'].':failoverStatus';
-    }
-
 
 }
