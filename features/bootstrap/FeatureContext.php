@@ -82,9 +82,9 @@ class FeatureContext extends BehatContext
     }
 
     /**
-     * @Then /^failover status should be set to use reserve and dont retry until some time in future$/
+     * @Then /^failover status should be set to dont retry until some time in future$/
      */
-    public function failoverStatusShouldBeSetToUseReserveAndDontRetryUntilSomeTimeInFuture()
+    public function failoverStatusShouldBeSetToDontRetryUntilSomeTimeInFuture()
     {
         \assertTrue($this->cache->fetch($this->failoverStatusVar()) > time());
     }
