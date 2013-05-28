@@ -17,8 +17,8 @@ class Heartbeat
 
     public function __construct(array $params)
     {
-        $this->heartbeatTable       = isset($params['heartbeat_table']) ? $params['heartbeat_table'] : self::DEFAULT_HEARTBEAT_TABLE;
-        $this->heartbeatTableColumn = isset($params['heartbeat_table_column']) ? $params['heartbeat_table_column'] : self::DEFAULT_HEARTBEAT_TABLE_COLUMN;
+        $this->heartbeatTable       = isset($params['heartbeatTable']) ? $params['heartbeatTable'] : self::DEFAULT_HEARTBEAT_TABLE;
+        $this->heartbeatTableColumn = isset($params['heartbeatTableColumn']) ? $params['heartbeatTableColumn'] : self::DEFAULT_HEARTBEAT_TABLE_COLUMN;
 
         $this->heartbeatToken = $this->newHeartbeatToken();
     }

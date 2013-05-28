@@ -121,12 +121,22 @@ class MasterMasterFailoverConnection extends Connection
         $params = $this->getParams();
 
         foreach($params as $param_name => $param_value) {
-            if(\strpos($param_name, 'reserve_') === 0) {
-                $params[\substr($param_name, 8)] = $param_value;
+            if($this->isReserveParam($param_name)) {
+                $params[$this->convertReserveParamToNormal($param_name)] = $param_value;
             }
         }
 
         return $params;
+    }
+
+    private function isReserveParam($param_name)
+    {
+        return \strpos($param_name, 'reserve') === 0;
+    }
+
+    private function convertReserveParamToNormal($param_name)
+    {
+        return \strtolower($param_name[7]).\substr($param_name, 8);
     }
 
     private function canSwitchBackToMain()

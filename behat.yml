@@ -6,10 +6,10 @@ default:
             driver: 'pdo_mysql'
             host: '127.0.0.1'
             port: '20101'
-            reserve_host: '127.0.0.1'
-            reserve_port: '20102'
+            reserveHost: '127.0.0.1'
+            reservePort: '20102'
             user: "msandbox"
             password: "msandbox"
             dbname: "test"
-            heartbeat_table: "heartbeat"
-            heartbeat_table_column: "value"
+            heartbeatTable: "heartbeat"
+            heartbeatTableColumn: "value"

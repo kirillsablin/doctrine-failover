@@ -94,8 +94,8 @@ class FeatureContext extends BehatContext
      */
     public function reserveDbShouldBeUsed()
     {
-        \assertEquals($this->dbParams['reserve_port'], $this->connection->getPort());
-        \assertEquals($this->dbParams['reserve_host'], $this->connection->getHost());
+        \assertEquals($this->dbParams['reservePort'], $this->connection->getPort());
+        \assertEquals($this->dbParams['reserveHost'], $this->connection->getHost());
     }
 
     /**
