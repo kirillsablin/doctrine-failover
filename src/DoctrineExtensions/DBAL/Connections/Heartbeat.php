@@ -23,6 +23,11 @@ class Heartbeat
         $this->heartbeatToken = $this->newHeartbeatToken();
     }
 
+    private function newHeartbeatToken()
+    {
+        return md5(rand(0, 10000000)).time();
+    }
+
     public function startCycle(Connection $db)
     {
         $insert_stmt = $db->prepare(sprintf(self::WRITE_HEARTBEAT_TOKEN_SQL, $this->heartbeatTable, $this->heartbeatTableColumn));
@@ -39,11 +44,6 @@ class Heartbeat
         if($read_stmt->fetch() === false) {
             throw new DBALException("Error during listening for heartbeat echo");
         }
-    }
-
-    private function newHeartbeatToken()
-    {
-        return md5(rand(0, 10000000)).time();
     }
 
 }

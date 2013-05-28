@@ -27,11 +27,6 @@ class MasterMasterFailoverConnection extends Connection
         parent::__construct($params, $driver, $config, $eventManager);
     }
 
-    public function isConnected()
-    {
-        return $this->isConnected;
-    }
-
     public function connect()
     {
         if($this->isConnected) {
@@ -63,9 +58,9 @@ class MasterMasterFailoverConnection extends Connection
         return true;
     }
 
-    private function connectToReserve()
+    public function isConnected()
     {
-        return $this->connectByParams($this->reserveParams());
+        return $this->isConnected;
     }
 
     private function connectWithFailover()
@@ -74,7 +69,7 @@ class MasterMasterFailoverConnection extends Connection
             $this->connectToMain();
         }
         catch(\Exception $e) {
-            $this->connectByParams($this->reserveParams());
+            $this->connectToReserve();
             $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
         }
     }
@@ -84,24 +79,9 @@ class MasterMasterFailoverConnection extends Connection
         return $this->connectByParams($this->getParams());
     }
 
-    public function getHost()
+    private function connectToReserve()
     {
-        if(empty($this->usedParams)) {
-            return parent::getHost();
-        }
-        else {
-            return isset($this->usedParams['host']) ? $this->usedParams['host'] : null;
-        }
-    }
-
-    public function getPort()
-    {
-        if(empty($this->usedParams)) {
-            return parent::getPort();
-        }
-        else {
-            return isset($this->usedParams['port']) ? $this->usedParams['port'] : null;
-        }
+        return $this->connectByParams($this->reserveParams());
     }
 
     private function connectByParams(array $params)
@@ -150,6 +130,26 @@ class MasterMasterFailoverConnection extends Connection
         }
 
         return true;
+    }
+
+    public function getHost()
+    {
+        if(empty($this->usedParams)) {
+            return parent::getHost();
+        }
+        else {
+            return isset($this->usedParams['host']) ? $this->usedParams['host'] : null;
+        }
+    }
+
+    public function getPort()
+    {
+        if(empty($this->usedParams)) {
+            return parent::getPort();
+        }
+        else {
+            return isset($this->usedParams['port']) ? $this->usedParams['port'] : null;
+        }
     }
 
 }
