@@ -18,9 +18,12 @@ class MasterMasterFailoverConnection extends Connection
 
     private $failoverStatus;
 
+    private $heartbeat;
+
     public function __construct(array $params, Driver $driver, Configuration $config = null, EventManager $eventManager = null)
     {
         $this->failoverStatus = new FailoverStatus($params);
+        $this->heartbeat      = new Heartbeat($params);
         parent::__construct($params, $driver, $config, $eventManager);
     }
 
@@ -36,18 +39,18 @@ class MasterMasterFailoverConnection extends Connection
         }
 
         if($this->failoverStatus->isClean()) {
-            try {
-                $this->connectByParams($this->getParams());
-            }
-            catch(\Exception $e) {
-                $this->connectByParams($this->reserveParams());
-                $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
-            }
+            $this->connectWithFailover();
+        }
+        elseif($this->failoverStatus->isActive()) {
+            $this->connectToReserve();
+        }
+        elseif($this->canSwitchBackToMain()) {
+            $this->failoverStatus->clear();
+            $this->connectWithFailover();
         }
         else {
-            if($this->failoverStatus->isActive()) {
-                $this->connectByParams($this->reserveParams());
-            }
+            $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
+            $this->connectToReserve();
         }
 
         $this->isConnected = true;
@@ -58,6 +61,27 @@ class MasterMasterFailoverConnection extends Connection
         }
 
         return true;
+    }
+
+    private function connectToReserve()
+    {
+        return $this->connectByParams($this->reserveParams());
+    }
+
+    private function connectWithFailover()
+    {
+        try {
+            $this->connectToMain();
+        }
+        catch(\Exception $e) {
+            $this->connectByParams($this->reserveParams());
+            $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
+        }
+    }
+
+    private function connectToMain()
+    {
+        return $this->connectByParams($this->getParams());
     }
 
     public function getHost()
@@ -103,6 +127,19 @@ class MasterMasterFailoverConnection extends Connection
         }
 
         return $params;
+    }
+
+    private function canSwitchBackToMain()
+    {
+        try {
+            $this->heartbeat->startCycle($this->connectToReserve());
+            $this->heartbeat->listenForEcho($this->connectToMain());
+        }
+        catch(DBALException $e) {
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -1,9 +1,6 @@
 <?php
 
-use Behat\Behat\Context\BehatContext,
-    Behat\Behat\Exception\PendingException;
-use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+use Behat\Behat\Context\BehatContext;
 use FailoverContext\SandboxController;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\Common\Cache\ArrayCache;
@@ -31,6 +28,8 @@ class FeatureContext extends BehatContext
         $this->dbParams                            = $parameters['db'];
         $this->dbParams['wrapperClass']            = '\DoctrineExtensions\DBAL\Connections\MasterMasterFailoverConnection';
         $this->dbParams['failoverStatusCacheImpl'] = $this->cache;
+        $this->dbParams['heartbeatTable']          = 'heartbeat';
+        $this->dbParams['heartbeatTableColumn']    = 'value';
 
         $this->connection = DriverManager::getConnection($this->dbParams);
     }
@@ -41,6 +40,7 @@ class FeatureContext extends BehatContext
     public function mainDbIsOnline()
     {
         $this->sandboxController->startAllServers();
+        $this->sandboxController->resumeCircularReplication();
     }
 
     /**
@@ -104,6 +104,30 @@ class FeatureContext extends BehatContext
     public function failoverStatusIsDontRetryUntilFuture()
     {
         $this->cache->save($this->failoverStatusVar(), time() + 600);
+    }
+
+    /**
+     * @Given /^failover status is dont retry until some time in past$/
+     */
+    public function failoverStatusIsDontRetryUntilSomeTimeInPast()
+    {
+        $this->cache->save($this->failoverStatusVar(), time() - 100);
+    }
+
+    /**
+     * @Given /^failover status should be cleaned$/
+     */
+    public function failoverStatusShouldBeCleaned()
+    {
+        \assertFalse($this->cache->contains($this->failoverStatusVar()));
+    }
+
+    /**
+     * @Given /^replication from reserve to main is offline$/
+     */
+    public function replicationFromReserveToMainIsOffline()
+    {
+        $this->sandboxController->stopSlaveAtFirstServer();
     }
 
 }

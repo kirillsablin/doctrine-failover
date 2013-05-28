@@ -32,6 +32,11 @@ class FailoverStatus
         $this->cache->save($this->cacheVariableName(), time() + $seconds);
     }
 
+    public function clear()
+    {
+        $this->cache->delete($this->cacheVariableName());
+    }
+
     public function isClean()
     {
         return !$this->cache->contains($this->cacheVariableName());
@@ -40,11 +45,6 @@ class FailoverStatus
     public function isActive()
     {
         return !$this->isClean() && $this->cache->fetch($this->cacheVariableName()) > time();
-    }
-
-    public function clear()
-    {
-        $this->cache->delete($this->cacheVariableName());
     }
 
     private function cacheVariableName()

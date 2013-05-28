@@ -22,4 +22,22 @@ Feature: failover
     When I connect to db
     Then reserve db should be used
 
+  Scenario: don't retry until period exceeded and replication is online
+    Given main db is online
+    And failover status is dont retry until some time in past
+    When I connect to db
+    Then main db should be used
+    And failover status should be cleaned
+
+  Scenario: don't retry until period exceeded but not all is ok with main db
+    Given main db is online
+    And failover status is dont retry until some time in past
+    But replication from reserve to main is offline
+    When I connect to db
+    Then failover status should be set to use reserve and dont retry until some time in future
+    And reserve db should be used
+
+
+
+
 
