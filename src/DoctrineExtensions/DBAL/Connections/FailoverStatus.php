@@ -6,16 +6,21 @@ use Doctrine\DBAL\DBALException;
 
 class FailoverStatus
 {
+    const DEFAULT_DONT_RETRY_PERIOD = 900;
+
     private $params;
     /**
      * @var Cache
      */
     private $cache;
 
+    private $dontRetryPeriod;
+
     function __construct(array $params)
     {
-        $this->params = $params;
-        $this->cache  = $this->getCacheFromParams();
+        $this->params          = $params;
+        $this->cache           = $this->getCacheFromParams();
+        $this->dontRetryPeriod = isset($this->params['dontRetryPeriod']) ? $this->params['dontRetryPeriod'] : self::DEFAULT_DONT_RETRY_PERIOD;
     }
 
     private function getCacheFromParams()
@@ -27,9 +32,9 @@ class FailoverStatus
         return $this->params['failoverStatusCacheImpl'];
     }
 
-    public function update($seconds)
+    public function turnOnOrRefresh()
     {
-        $this->cache->save($this->cacheVariableName(), time() + $seconds);
+        $this->cache->save($this->cacheVariableName(), time() + $this->dontRetryPeriod);
     }
 
     public function clear()

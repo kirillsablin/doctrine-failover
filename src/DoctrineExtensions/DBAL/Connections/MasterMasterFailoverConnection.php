@@ -11,7 +11,6 @@ use Doctrine\Common\EventManager;
 
 class MasterMasterFailoverConnection extends Connection
 {
-    const DONT_RETRY_PERIOD = 900;
 
     private $isConnected = false;
     private $usedParams = null;
@@ -44,8 +43,8 @@ class MasterMasterFailoverConnection extends Connection
             $this->connectWithFailover();
         }
         else {
-            $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
             $this->connectToReserve();
+            $this->failoverStatus->turnOnOrRefresh();
         }
 
         $this->isConnected = true;
@@ -70,7 +69,7 @@ class MasterMasterFailoverConnection extends Connection
         }
         catch(\Exception $e) {
             $this->connectToReserve();
-            $this->failoverStatus->update(self::DONT_RETRY_PERIOD);
+            $this->failoverStatus->turnOnOrRefresh();
         }
     }
 

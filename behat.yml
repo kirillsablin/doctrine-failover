@@ -13,3 +13,4 @@ default:
             dbname: "test"
             heartbeatTable: "heartbeat"
             heartbeatTableColumn: "value"
+            dontRetryPeriod: 600
