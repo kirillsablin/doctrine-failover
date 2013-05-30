@@ -99,23 +99,23 @@ class MasterMasterFailoverConnection extends Connection
     {
         $params = $this->getParams();
 
-        foreach($params as $param_name => $param_value) {
-            if($this->isReserveParam($param_name)) {
-                $params[$this->convertReserveParamToNormal($param_name)] = $param_value;
+        foreach($params as $paramName => $paramValue) {
+            if($this->isReserveParam($paramName)) {
+                $params[$this->convertReserveParamToNormal($paramName)] = $paramValue;
             }
         }
 
         return $params;
     }
 
-    private function isReserveParam($param_name)
+    private function isReserveParam($paramName)
     {
-        return \strpos($param_name, 'reserve') === 0;
+        return \strpos($paramName, 'reserve') === 0;
     }
 
-    private function convertReserveParamToNormal($param_name)
+    private function convertReserveParamToNormal($paramName)
     {
-        return \strtolower($param_name[7]).\substr($param_name, 8);
+        return \strtolower($paramName[7]).\substr($paramName, 8);
     }
 
     private function canSwitchBackToMain()

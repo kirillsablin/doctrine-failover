@@ -5,9 +5,9 @@ class SandboxController
 {
     private $pathToSandbox;
 
-    public function __construct($path_to_sandbox)
+    public function __construct($pathToSandbox)
     {
-        $this->pathToSandbox = $path_to_sandbox;
+        $this->pathToSandbox = $pathToSandbox;
     }
 
     public function startAllServers()
@@ -38,10 +38,10 @@ class SandboxController
         $this->executeCommandAndEnsureReturn("./node1/use -u root -e  'show slave status'", 'Yes', 2);
     }
 
-    private function executeCommandAndEnsureReturn($command, $expected_text_in_return, $count = 1)
+    private function executeCommandAndEnsureReturn($command, $expectedTextInReturn, $count = 1)
     {
         $output = $this->executeCommand($command);
-        $this->ensureTextInOutput($output, $expected_text_in_return, $count);
+        $this->ensureTextInOutput($output, $expectedTextInReturn, $count);
     }
 
     private function executeCommand($command)

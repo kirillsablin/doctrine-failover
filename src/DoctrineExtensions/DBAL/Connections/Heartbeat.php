@@ -30,18 +30,18 @@ class Heartbeat
 
     public function startCycle(Connection $db)
     {
-        $insert_stmt = $db->prepare(sprintf(self::WRITE_HEARTBEAT_TOKEN_SQL, $this->heartbeatTable, $this->heartbeatTableColumn));
-        if(!$insert_stmt->execute(array($this->heartbeatToken))) {
+        $insertStatement = $db->prepare(sprintf(self::WRITE_HEARTBEAT_TOKEN_SQL, $this->heartbeatTable, $this->heartbeatTableColumn));
+        if(!$insertStatement->execute(array($this->heartbeatToken))) {
             throw new DBALException("Error during starting heartbeat cycle");
         }
     }
 
     public function listenForEcho(Connection $db)
     {
-        $read_stmt = $db->prepare(sprintf(self::READ_HEARTBEAT_TOKEN_SQL, $this->heartbeatTable, $this->heartbeatTableColumn));
-        $read_stmt->execute(array($this->heartbeatToken));
+        $readStatement = $db->prepare(sprintf(self::READ_HEARTBEAT_TOKEN_SQL, $this->heartbeatTable, $this->heartbeatTableColumn));
+        $readStatement->execute(array($this->heartbeatToken));
 
-        if($read_stmt->fetch() === false) {
+        if($readStatement->fetch() === false) {
             throw new DBALException("Error during listening for heartbeat echo");
         }
     }
