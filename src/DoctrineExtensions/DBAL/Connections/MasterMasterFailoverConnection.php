@@ -120,7 +120,7 @@ class MasterMasterFailoverConnection extends Connection
 
     private function canSwitchBackToMain()
     {
-        return $this->heartbeat->isReplicationAlive($this->connectToReserve(), $this->connectToMain());
+        return $this->heartbeat->isReplicationAlive($this->connectToMain(), $this->connectToReserve());
     }
 
     public function getHost()
