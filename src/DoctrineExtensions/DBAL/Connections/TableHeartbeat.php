@@ -10,15 +10,18 @@ class TableHeartbeat implements Heartbeat
     const READ_HEARTBEAT_TOKEN_SQL       = "SELECT * FROM `%s` WHERE `%s` = ?";
     const DEFAULT_HEARTBEAT_TABLE        = "heartbeat";
     const DEFAULT_HEARTBEAT_TABLE_COLUMN = "value";
+    const DEFAULT_DELAY_BEFORE_LISTENING = 10000;
 
     private $heartbeatToken;
     private $heartbeatTable;
     private $heartbeatTableColumn;
+    private $delayBeforeListening;
 
     public function __construct(array $params)
     {
         $this->heartbeatTable       = isset($params['heartbeatTable']) ? $params['heartbeatTable'] : self::DEFAULT_HEARTBEAT_TABLE;
         $this->heartbeatTableColumn = isset($params['heartbeatTableColumn']) ? $params['heartbeatTableColumn'] : self::DEFAULT_HEARTBEAT_TABLE_COLUMN;
+        $this->delayBeforeListening = isset($params['delayBeforeListening']) ? $params['delayBeforeListening'] : self::DEFAULT_DELAY_BEFORE_LISTENING;
 
         $this->heartbeatToken = $this->newHeartbeatToken();
     }
@@ -32,6 +35,7 @@ class TableHeartbeat implements Heartbeat
     {
         try {
             $this->startCycle($reserve);
+            \usleep($this->delayBeforeListening);
             $this->listenForEcho($main);
         }
         catch(DBALException $e) {
