@@ -22,7 +22,7 @@ class MasterMasterFailoverConnection extends Connection
     public function __construct(array $params, Driver $driver, Configuration $config = null, EventManager $eventManager = null)
     {
         $this->failoverStatus = new FailoverStatus($params);
-        $this->heartbeat      = new Heartbeat($params);
+        $this->heartbeat      = new TableHeartbeat($params);
         parent::__construct($params, $driver, $config, $eventManager);
     }
 
@@ -120,15 +120,7 @@ class MasterMasterFailoverConnection extends Connection
 
     private function canSwitchBackToMain()
     {
-        try {
-            $this->heartbeat->startCycle($this->connectToReserve());
-            $this->heartbeat->listenForEcho($this->connectToMain());
-        }
-        catch(DBALException $e) {
-            return false;
-        }
-
-        return true;
+        return $this->heartbeat->isReplicationAlive($this->connectToReserve(), $this->connectToMain());
     }
 
     public function getHost()
