@@ -15,6 +15,7 @@ Feature: failover
     When I connect to db
     Then failover status should be set to dont retry until some time in future
     And reserve db should be used
+    And failover event should be dispatched
 
   Scenario: don't retry until
     Given main db is online
@@ -28,6 +29,7 @@ Feature: failover
     When I connect to db
     Then main db should be used
     And failover status should be cleaned
+    And failback event should be dispatched
 
   Scenario: don't retry until period exceeded but not all is ok with main db
     Given main db is online
@@ -36,6 +38,7 @@ Feature: failover
     When I connect to db
     Then failover status should be set to dont retry until some time in future
     And reserve db should be used
+    And no failover events should be dispatched
 
 
 

@@ -1,11 +1,11 @@
 <?php
+require_once __DIR__."/bootstrap.php";
 
 use Behat\Behat\Context\BehatContext;
 use FailoverContext\SandboxController;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\Common\Cache\ArrayCache;
-
-require_once __DIR__."/bootstrap.php";
+use Doctrine\Common\EventManager;
 
 class FeatureContext extends BehatContext
 {
@@ -20,6 +20,8 @@ class FeatureContext extends BehatContext
      */
     private $cache;
 
+    private $eventSubscriber;
+
     public function __construct(array $parameters)
     {
         $this->sandboxController = new SandboxController($parameters['sandbox_dir']);
@@ -31,7 +33,11 @@ class FeatureContext extends BehatContext
         $this->dbParams['heartbeatTable']          = 'heartbeat';
         $this->dbParams['heartbeatTableColumn']    = 'value';
 
-        $this->connection = DriverManager::getConnection($this->dbParams);
+        $eventManager          = new EventManager();
+        $this->eventSubscriber = new \FailoverContext\EventSubscriberForTests();
+        $eventManager->addEventSubscriber($this->eventSubscriber);
+
+        $this->connection = DriverManager::getConnection($this->dbParams, null, $eventManager);
     }
 
     /**
@@ -128,6 +134,30 @@ class FeatureContext extends BehatContext
     public function replicationFromReserveToMainIsOffline()
     {
         $this->sandboxController->stopSlaveAtFirstServer();
+    }
+
+    /**
+     * @Given /^failover event should be dispatched$/
+     */
+    public function failoverEventShouldBeDispatched()
+    {
+        \assertEquals(1, $this->eventSubscriber->onFailoverInvoked);
+    }
+
+    /**
+     * @Given /^failback event should be dispatched$/
+     */
+    public function failbackEventShouldBeDispatched()
+    {
+        \assertEquals(1, $this->eventSubscriber->onFailbackInvoked);
+    }
+
+    /**
+     * @Given /^no failover events should be dispatched$/
+     */
+    public function noFailoverEventsShouldBeDispatched()
+    {
+        \assertEquals(0, $this->eventSubscriber->onFailoverInvoked);
     }
 
 }

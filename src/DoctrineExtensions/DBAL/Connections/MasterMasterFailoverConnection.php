@@ -11,6 +11,8 @@ use Doctrine\Common\EventManager;
 
 class MasterMasterFailoverConnection extends Connection
 {
+    const onFailover = 'onFailover';
+    const onFailback = 'onFailback';
 
     private $isConnected = false;
     private $usedParams = null;
@@ -40,6 +42,7 @@ class MasterMasterFailoverConnection extends Connection
         }
         elseif($this->canSwitchBackToMain()) {
             $this->failoverStatus->clear();
+            $this->dispatchEvent(self::onFailback);
             $this->connectWithFailover();
         }
         else {
@@ -49,10 +52,7 @@ class MasterMasterFailoverConnection extends Connection
 
         $this->isConnected = true;
 
-        if($this->_eventManager->hasListeners(Events::postConnect)) {
-            $eventArgs = new ConnectionEventArgs($this);
-            $this->_eventManager->dispatchEvent(Events::postConnect, $eventArgs);
-        }
+        $this->dispatchEvent(Events::postConnect);
 
         return true;
     }
@@ -70,6 +70,7 @@ class MasterMasterFailoverConnection extends Connection
         catch(\Exception $e) {
             $this->connectToReserve();
             $this->failoverStatus->turnOnOrRefresh();
+            $this->dispatchEvent(self::onFailover);
         }
     }
 
@@ -140,6 +141,14 @@ class MasterMasterFailoverConnection extends Connection
         }
         else {
             return isset($this->usedParams['port']) ? $this->usedParams['port'] : null;
+        }
+    }
+
+    private function dispatchEvent($event)
+    {
+        if($this->_eventManager->hasListeners($event)) {
+            $eventArgs = new ConnectionEventArgs($this);
+            $this->_eventManager->dispatchEvent($event, $eventArgs);
         }
     }
 
