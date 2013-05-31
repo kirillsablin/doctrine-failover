@@ -19,9 +19,13 @@ At this moment only table based heartbeat strategy implemented (checking if repl
         )
 
 
-2) If you use composer edit your composer.json
+2) If you use composer add to your composer.json
 
-            to be done ...
+        "require": {
+         ....
+            "doctrine/doctrine-failover": "dev-master"
+         ....
+         }
 
 2a) If you don't use composer copy add contents of src folder to you project and setup autoload if necessary
 
