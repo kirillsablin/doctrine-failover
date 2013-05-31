@@ -12,12 +12,12 @@ At this moment only table based heartbeat strategy implemented (checking if repl
 1) Create heartbeat table at both masters
     Example SQL:
 
-    ```
+
         CREATE TABLE `heartbeat` (
           `value` varchar(255) DEFAULT NULL,
           KEY `value` (`value`)
         )
-    ```
+
 
 2) If you use composer edit your composer.json
 
