@@ -16,3 +16,4 @@ How to run tests
 There are also PHPUnit tests inside tests dir
 
 You have to run both behat and phpunit tests in order to validate modifications
+
