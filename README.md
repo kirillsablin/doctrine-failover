@@ -23,7 +23,7 @@ At this moment only table based heartbeat strategy implemented (checking if repl
 
         "require": {
          ....
-            "doctrine-extensions/doctrine-failover": "dev-master"
+            "kirillsablin/doctrine-failover": "dev-master"
          ....
          }
 
