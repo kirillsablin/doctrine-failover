@@ -1,5 +1,5 @@
 {
-    "name": "doctrine/doctrine-failover",
+    "name": "doctrine-extensions/doctrine-failover",
     "description": "Doctrine mysql master-master failover with automatic failback",
 
     "require": {

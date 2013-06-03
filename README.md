@@ -23,7 +23,7 @@ At this moment only table based heartbeat strategy implemented (checking if repl
 
         "require": {
          ....
-            "doctrine/doctrine-failover": "dev-master"
+            "doctrine-extensions/doctrine-failover": "dev-master"
          ....
          }
 
@@ -54,5 +54,10 @@ $config = array(
 );
 
 ```
+
+Failover-specific events
+------------------------
+
+Two new event's types were added 'onFailover', 'onFailback'.
 
 
