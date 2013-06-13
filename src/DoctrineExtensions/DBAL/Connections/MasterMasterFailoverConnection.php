@@ -76,12 +76,16 @@ class MasterMasterFailoverConnection extends Connection
 
     private function connectToMain()
     {
-        return $this->connectByParams($this->getParams());
+        $this->_conn = $this->connectByParams($this->getParams());
+
+        return $this->_conn;
     }
 
     private function connectToReserve()
     {
-        return $this->connectByParams($this->reserveParams());
+        $this->_conn = $this->connectByParams($this->reserveParams());
+
+        return $this->_conn;
     }
 
     private function connectByParams(array $params)
